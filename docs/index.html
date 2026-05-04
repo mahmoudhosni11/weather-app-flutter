@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Weather App - Enhanced Preview</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@200;300;400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Outfit',sans-serif;background:#0a0a0a;display:flex;justify-content:center;align-items:center;min-height:100vh}
+.phone{width:390px;height:844px;border-radius:44px;overflow:hidden;box-shadow:0 30px 100px rgba(0,0,0,.6),0 0 0 2px #222;position:relative;display:flex;flex-direction:column;transition:background 2s ease}
+.phone-bg{position:absolute;inset:0;transition:background 2s ease;background:linear-gradient(to bottom,#0F2027,#203A43,#2C5364);z-index:0}
+.content{position:relative;z-index:1;flex:1;display:flex;flex-direction:column}
+/* App bar */
+.appbar{height:90px;display:flex;align-items:flex-end;padding:0 20px 12px;justify-content:space-between}
+.appbar h1{font-size:22px;font-weight:600;color:#fff;letter-spacing:1.2px}
+.icon-btn{width:44px;height:44px;display:flex;align-items:center;justify-content:center;border-radius:12px;background:rgba(255,255,255,.12);border:none;cursor:pointer;transition:background .2s}
+.icon-btn:hover{background:rgba(255,255,255,.22)}
+.icon-btn .material-icons-round{color:#fff;font-size:24px}
+/* Pages */
+.page{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px}
+/* Glass card */
+.glass{backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);background:rgba(255,255,255,.08);border:1.5px solid rgba(255,255,255,.15);border-radius:20px;padding:24px 32px;box-shadow:0 10px 30px rgba(0,0,0,.1)}
+/* No weather */
+#noWeather .icon-big{font-size:90px;color:rgba(255,255,255,.2);margin-bottom:30px;animation:pulse 3s ease-in-out infinite}
+@keyframes pulse{0%,100%{transform:scale(1);opacity:.2}50%{transform:scale(1.08);opacity:.35}}
+#noWeather .glass p{font-size:22px;color:rgba(255,255,255,.85);font-weight:300;line-height:1.6;text-align:center}
+#noWeather .hint{font-size:13px;color:rgba(255,255,255,.35);margin-top:28px;display:flex;align-items:center;gap:8px}
+/* Weather view */
+#weatherView{display:none;padding:0 20px}
+.city{font-size:36px;font-weight:700;color:#fff;letter-spacing:2px;text-align:center}
+.time-badge{background:rgba(255,255,255,.15);padding:5px 16px;border-radius:20px;font-size:14px;color:rgba(255,255,255,.75);margin-top:6px;letter-spacing:.5px}
+.weather-card{width:100%;margin-top:10px}
+.weather-card .glass{display:flex;align-items:center;justify-content:space-evenly;padding:28px 16px}
+.wx-icon-wrap{display:flex;flex-direction:column;align-items:center;gap:6px}
+.wx-icon{font-size:60px;animation:iconFloat 3s ease-in-out infinite}
+@keyframes iconFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+.wx-img{width:48px;height:48px;object-fit:contain;opacity:.8}
+.temp-big{font-size:62px;font-weight:200;color:#fff;line-height:1}
+.temp-unit{font-size:13px;color:rgba(255,255,255,.45);letter-spacing:2px;text-transform:uppercase}
+.chip{display:flex;align-items:center;gap:4px;padding:6px 12px;border-radius:12px;font-size:15px;font-weight:600;margin:5px 0}
+.chip-up{background:rgba(255,112,67,.15);border:1px solid rgba(255,112,67,.3);color:#FF7043}
+.chip-down{background:rgba(66,165,245,.15);border:1px solid rgba(66,165,245,.3);color:#42A5F5}
+.chip .material-icons-round{font-size:16px}
+.state-name{font-size:26px;font-weight:600;color:#fff;letter-spacing:1.5px;text-align:center;margin-top:10px}
+.state-line{width:60px;height:3px;background:rgba(255,255,255,.25);border-radius:2px;margin-top:10px}
+/* Search page */
+#searchPage{position:absolute;inset:0;z-index:10;background:linear-gradient(to bottom,#0F2027,#203A43,#2C5364);transform:translateX(100%);transition:transform .4s cubic-bezier(.4,0,.2,1);display:flex;flex-direction:column}
+#searchPage.active{transform:translateX(0)}
+#searchPage .appbar{justify-content:flex-start;gap:12px}
+.search-body{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px}
+.search-body .icon-big{font-size:72px;color:rgba(255,255,255,.15);margin-bottom:36px;animation:pulse 3s ease-in-out infinite}
+.search-glass{width:100%}
+.search-input{width:100%;padding:18px 54px 18px 48px;font-size:17px;font-family:'Outfit',sans-serif;color:#fff;background:rgba(255,255,255,.05);border:1.5px solid rgba(255,255,255,.15);border-radius:16px;outline:none;letter-spacing:.5px;transition:border-color .2s}
+.search-input::placeholder{color:rgba(255,255,255,.28)}
+.search-input:focus{border-color:#42A5F5}
+.input-wrap{position:relative}
+.input-wrap .pre{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:rgba(255,255,255,.35);font-size:22px}
+.input-wrap .suf{position:absolute;right:8px;top:50%;transform:translateY(-50%);width:38px;height:38px;display:flex;align-items:center;justify-content:center;background:rgba(66,165,245,.3);border-radius:10px;border:none;cursor:pointer;transition:background .2s}
+.input-wrap .suf:hover{background:rgba(66,165,245,.5)}
+.input-wrap .suf .material-icons-round{color:#fff;font-size:20px}
+.error-box{margin-top:16px;padding:10px 16px;background:rgba(244,67,54,.12);border:1px solid rgba(244,67,54,.3);border-radius:12px;display:none;align-items:center;gap:8px;color:#ef5350;font-size:14px;width:100%}
+.error-box.show{display:flex}
+.hint-text{color:rgba(255,255,255,.28);font-size:14px;margin-top:24px}
+/* Loading */
+.loading{position:absolute;inset:0;z-index:20;background:rgba(0,0,0,.5);backdrop-filter:blur(8px);display:none;flex-direction:column;align-items:center;justify-content:center;gap:18px}
+.loading.show{display:flex}
+.spinner{width:48px;height:48px;border:3px solid rgba(255,255,255,.15);border-top-color:rgba(255,255,255,.7);border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading span{color:rgba(255,255,255,.6);font-size:16px}
+</style>
+</head>
+<body>
+<div class="phone">
+  <div class="phone-bg" id="phoneBg"></div>
+  <div class="content">
+    <div class="appbar" id="mainBar">
+      <h1>Weather App</h1>
+      <button class="icon-btn" id="searchBtn"><span class="material-icons-round">search</span></button>
+    </div>
+    <!-- No Weather -->
+    <div class="page" id="noWeather">
+      <span class="material-icons-round icon-big">cloud_off</span>
+      <div class="glass">
+        <p>there is no weather 😔<br>start searching now 🔍</p>
+      </div>
+      <div class="hint"><span class="material-icons-round" style="font-size:18px">touch_app</span>Tap the search icon to get started</div>
+    </div>
+    <!-- Weather View -->
+    <div class="page" id="weatherView">
+      <div style="flex:2"></div>
+      <p class="city" id="cityName"></p>
+      <span class="time-badge" id="timeText"></span>
+      <div style="flex:1"></div>
+      <div class="weather-card"><div class="glass" id="weatherCard">
+        <div class="wx-icon-wrap">
+          <span class="material-icons-round wx-icon" id="wxIcon"></span>
+          <img class="wx-img" id="wxImg" src="" alt="">
+        </div>
+        <div style="text-align:center">
+          <span class="temp-big" id="tempBig"></span>
+          <div class="temp-unit">Celsius</div>
+        </div>
+        <div>
+          <div class="chip chip-up"><span class="material-icons-round">arrow_upward</span><span id="maxT"></span></div>
+          <div class="chip chip-down"><span class="material-icons-round">arrow_downward</span><span id="minT"></span></div>
+        </div>
+      </div></div>
+      <div style="flex:1"></div>
+      <p class="state-name" id="stateName"></p>
+      <div class="state-line"></div>
+      <div style="flex:4"></div>
+    </div>
+    <!-- Search -->
+    <div id="searchPage">
+      <div class="appbar">
+        <button class="icon-btn" id="backBtn"><span class="material-icons-round">arrow_back</span></button>
+        <h1>Search a City</h1>
+      </div>
+      <div class="search-body">
+        <span class="material-icons-round icon-big">location_city</span>
+        <div class="glass search-glass">
+          <div class="input-wrap">
+            <span class="material-icons-round pre">search</span>
+            <input class="search-input" id="cityInput" placeholder="Enter a city name...">
+            <button class="suf" id="goBtn"><span class="material-icons-round">arrow_forward</span></button>
+          </div>
+          <div class="error-box" id="errBox"><span class="material-icons-round" style="font-size:18px">error_outline</span><span id="errMsg"></span></div>
+        </div>
+        <p class="hint-text">Try: Cairo, London, Tokyo, New York...</p>
+      </div>
+    </div>
+    <!-- Loading -->
+    <div class="loading" id="loader"><div class="spinner"></div><span>Fetching weather...</span></div>
+  </div>
+</div>
+
+<script>
+const API='https://api.weatherapi.com/v1',KEY='3677bed892474b30b7a122242220806';
+const $=id=>document.getElementById(id);
+
+// SVG weather icons as data URIs
+const imgs={
+  sunny:'data:image/svg+xml,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="22" fill="%23FFD600"/><g stroke="%23FFD600" stroke-width="4" stroke-linecap="round"><line x1="50" y1="12" x2="50" y2="22"/><line x1="50" y1="78" x2="50" y2="88"/><line x1="12" y1="50" x2="22" y2="50"/><line x1="78" y1="50" x2="88" y2="50"/><line x1="23" y1="23" x2="29" y2="29"/><line x1="71" y1="71" x2="77" y2="77"/><line x1="23" y1="77" x2="29" y2="71"/><line x1="71" y1="29" x2="77" y2="23"/></g></svg>'),
+  cloudy:'data:image/svg+xml,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="35" cy="38" r="16" fill="%23FFD600"/><path d="M25 62Q25 49 38 46Q40 34 53 34Q66 34 68 46Q79 46 79 55Q79 64 70 64L28 64Q19 64 25 62Z" fill="%23B0BEC5"/></svg>'),
+  rainy:'data:image/svg+xml,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><path d="M22 48Q22 37 34 34Q36 22 50 22Q64 22 66 34Q76 34 76 43Q76 52 67 52L26 52Q17 52 22 48Z" fill="%2378909C"/><g stroke="%2342A5F5" stroke-width="3" stroke-linecap="round"><line x1="35" y1="60" x2="30" y2="73"/><line x1="50" y1="60" x2="45" y2="73"/><line x1="65" y1="60" x2="60" y2="73"/></g></svg>'),
+  snowy:'data:image/svg+xml,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><path d="M22 48Q22 37 34 34Q36 22 50 22Q64 22 66 34Q76 34 76 43Q76 52 67 52L26 52Q17 52 22 48Z" fill="%2390A4AE"/><g fill="%23E3F2FD"><circle cx="35" cy="66" r="4"/><circle cx="50" cy="63" r="4"/><circle cx="65" cy="68" r="4"/><circle cx="42" cy="76" r="3"/><circle cx="58" cy="78" r="3"/></g></svg>'),
+  thunder:'data:image/svg+xml,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><path d="M22 43Q22 32 34 29Q36 17 50 17Q64 17 66 29Q76 29 76 38Q76 47 67 47L26 47Q17 47 22 43Z" fill="%23546E7A"/><polygon points="48,50 40,65 48,65 44,78 58,60 51,60 55,50" fill="%23FFD600"/></svg>')
+};
+
+const gradients={
+  sunny:['#FF8008','#FFC837','#FFF176'],
+  partly_cloudy:['#4CA1AF','#85C1E9','#D5F5E3'],
+  cloudy:['#616161','#9E9E9E','#BDBDBD'],
+  foggy:['#536976','#8BA4B5','#BBD2C5'],
+  rainy:['#0F2027','#203A43','#2C5364'],
+  snowy:['#E6DADA','#8EC5FC','#E0C3FC'],
+  thunderstorm:['#0F0C29','#302B63','#24243E']
+};
+const iconMap={sunny:'wb_sunny',partly_cloudy:'wb_cloudy',cloudy:'cloud',foggy:'foggy',rainy:'water_drop',snowy:'ac_unit',thunderstorm:'thunderstorm'};
+const iconColors={sunny:'#FFD600',partly_cloudy:'#90CAF9',cloudy:'#B0BEC5',foggy:'#90A4AE',rainy:'#42A5F5',snowy:'#ffffff',thunderstorm:'#FFD600'};
+const imgMap={sunny:'sunny',partly_cloudy:'sunny',cloudy:'cloudy',foggy:'cloudy',rainy:'rainy',snowy:'snowy',thunderstorm:'thunder'};
+
+function getCat(s){
+  s=s.toLowerCase();
+  if(s.includes('sunny')||s.includes('clear'))return'sunny';
+  if(s.includes('partly cloudy'))return'partly_cloudy';
+  if(s.includes('cloudy')||s.includes('overcast'))return'cloudy';
+  if(s.includes('mist')||s.includes('fog'))return'foggy';
+  if(s.includes('rain')||s.includes('drizzle')||s.includes('shower'))return'rainy';
+  if(s.includes('snow')||s.includes('sleet')||s.includes('blizzard')||s.includes('ice'))return'snowy';
+  if(s.includes('thunder'))return'thunderstorm';
+  return'sunny';
+}
+
+$('searchBtn').onclick=()=>{$('searchPage').classList.add('active');setTimeout(()=>$('cityInput').focus(),400)};
+$('backBtn').onclick=()=>{$('searchPage').classList.remove('active');$('cityInput').value='';$('errBox').classList.remove('show')};
+$('goBtn').onclick=doSearch;
+$('cityInput').onkeydown=e=>{if(e.key==='Enter')doSearch()};
+
+async function doSearch(){
+  const city=$('cityInput').value.trim();
+  if(!city)return;
+  $('errBox').classList.remove('show');
+  $('loader').classList.add('show');
+  try{
+    const r=await fetch(`${API}/forecast.json?key=${KEY}&q=${encodeURIComponent(city)}&days=7`);
+    if(r.status===400){const d=await r.json();throw new Error(d.error.message)}
+    if(!r.ok)throw new Error('Failed to fetch');
+    const d=await r.json(),day=d.forecast.forecastday[0].day,dt=new Date(d.current.last_updated);
+    const cat=getCat(day.condition.text),g=gradients[cat]||gradients.sunny;
+    $('phoneBg').style.background=`linear-gradient(to bottom,${g[0]},${g[1]},${g[2]})`;
+    $('cityName').textContent=city;
+    $('timeText').textContent=`updated at ${dt.getHours()}:${String(dt.getMinutes()).padStart(2,'0')}`;
+    $('wxIcon').textContent=iconMap[cat]||'wb_sunny';
+    $('wxIcon').style.color=iconColors[cat]||'#FFD600';
+    $('wxImg').src=imgs[imgMap[cat]]||imgs.sunny;
+    $('tempBig').textContent=Math.floor(day.avgtemp_c)+'°';
+    $('maxT').textContent=Math.floor(day.maxtemp_c)+'°';
+    $('minT').textContent=Math.floor(day.mintemp_c)+'°';
+    $('stateName').textContent=day.condition.text;
+    $('noWeather').style.display='none';
+    $('weatherView').style.display='flex';
+    $('searchPage').classList.remove('active');
+    $('cityInput').value='';
+  }catch(e){
+    $('errMsg').textContent=e.message;
+    $('errBox').classList.add('show');
+  }finally{
+    $('loader').classList.remove('show');
+  }
+}
+</script>
+</body>
+</html>
